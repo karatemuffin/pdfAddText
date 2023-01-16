@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="de-AT">
+	<head>
+		<title>Semesterprüfungsformular Generator</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<link rel="stylesheet" href="css/w3.css">
+		<!-- DataGridXL -->
+		<script src="js/datagridxl2.js"></script>
+		<!-- Papa Parse (to import and parse CSV files) -->
+		<script src="js/papaparse.min.js"></script>
+	</head>
+	<body>
+		<!-- Begin UI -->
+		<div class="w3-container w3-auto">
+			<br>
+			<div class="w3-container w3-card">
+				<div class="w3-container">
+					<h2>Semesterprüfungsformular</h2>
+				</div>
+				<div class="w3-panel w3-pale-yellow w3-leftbar w3-border-yellow">
+					Serverseitig werden keine Informationen gespeichert, daher Fehlermeldungen festhalten.
+				</div>
+
+				<div class="w3-bar w3-container">
+					<button class="w3-bar-item w3-button w3-red w3-round-large w3-right w3-margin" id="idHelpButton" onclick="w3_help_open()">Hilfe</button>  
+					<form action="parser.php" method="post" enctype="multipart/form-data">
+						<input class="w3-bar-item w3-input w3-border custom-file-input w3-margin" type="file" id="csv-file" name="files-csv" class="" accept=".csv">
+						<input class="w3-bar-item w3-button w3-green w3-round-large w3-right w3-margin" type="submit" id="button-save" value="Erzeuge Formulare">
+						<input  class="w3-input w3-border" type="hidden" name="data" id="iddata" value="">
+					</form>
+				</div>
+
+				<div class= "w3-container w3-border w3-margin" id="grid" style="height: 50vh;">
+				</div>
+			</div>	
+		</div>	
+		<!-- End UI --> 
+
+		<!-- Begin Help -->
+		<div id="idHelp" class="w3-modal">
+			<div class="w3-modal-content w3-card w3-container">
+				<header class="w3-container w3-white"> 
+					<span onclick="w3_help_close()" class="w3-button w3-red w3-display-topright">&times;</span>
+					<h2>Hilfe</h2>
+				</header>
+
+				<h4>Erwartetes Format</h4>				
+Eine csv/txt Datei mit <b>,</b> als Delimiter und <b>"</b> als Enclosure. 5 Spalten <b>ohne</b> Header: Schülername, Klasse, Fachkürzel, Name Professor, Kürzel Professor.<br>
+Beispiel:
+<pre>
+"Musterschüler Franz","2AHET","AIIT","Musterlehrer Fritzl","mrf"
+"Musterschülerin Marianne","2AHET","SEN","Musterlehrer Fritzl","mrf"
+"Mustermann Sepp","2BHET","AIIT","Musterlehrer Fritzl","mrf"
+</pre>
+<h4>Unterstützte Fächerkürzel</h4>
+Sollte eines nicht dabei sein, dann bitte melden.
+<pre>			
+"RK" => "Religion Katholisch",
+"RE" => "Religion",
+"RISL" => "Religion Islamisch",
+"ETH" => "Ethik",
+"D" => "Deutsch",
+"E1" => "Englisch",
+"GGP" => "Geografie, Geschichte und Politische Bildung",
+"WIR" => "Wirtschaft und Recht",
+"BSP" => "Bewegung und Sport",
+"AM" => "Angewandte Mathematik",
+"NW" => "Naturwissenschaften",
+"ES1" => "Energiesysteme",
+"AUT" => "Automatisierungstechnik",
+"AT1" => "Antriebstechnik",
+"IE1" => "Industrieelektronik",
+"AIIT" => "Angewandte Informatik und Fachspezischische Informationstechnik",
+"FIV" => "Fachspezifische Informatik Vertiefung",
+"CPE" => "Computergestützte Projektentwicklung",
+"LA1" => "Laboratorium",
+"WPT" => "Werkstätte und Produktionstechnik",
+"SOPK" => "Soziale und personale Kompetenz",
+"ES1V" => "Energiesysteme Vertiefung",
+"AUT1V" => "Automatisierungstechnik Vertiefung",
+"AT1V" => "Antriebstechnik Vertiefung",
+"IE1V" => "Industrieelektronik Vertiefung",
+"SEN" => "Software Enginering",
+"KPRA" => "Kommunikations- und Präsentationstechnik",
+"MEEM" => "Mechanik und Elemente des Maschinenbaus",
+"MTSA" => "Mechatronische Systeme und Automatisierung",
+"KOP" => "Konstruktion und Projektmanagement",
+"FTBT" => "Fertigungs- und Betriebstechnik"
+</pre>
+				<h4>Druckereinstellungen</h4>
+				<div class="w3-center w3-margin-bottom">
+					<img src="images/printer.png" alt="Druckereinstellungen" class="w3-image">
+				</div>
+				<br>
+			</div>
+		</div>
+		<!-- End Help --> 
+
+		<!-- Begin Bottom -->		
+		<div class="w3-container w3-border w3-light-grey w3-bottom w3-center">
+			<div class="w3-center">
+			<a class="w3-bar-item" href="https://github.com/karatemuffin/" title="GitHub Repository" target="_blank"><img src="images/button-github.png" height="15" alt="GitHub Repository" /></a>
+			<a class="w3-bar-item" href="https://php.net" title="Powered by PHP" target="_blank"><img src="images/button-php.gif" width="80" height="15" alt="Powered by PHP" /></a>
+			<a class="w3-bar-item" href="//validator.w3.org/check/referer" title="Valid HTML5" target="_blank"><img src="images/button-html5.png" width="80" height="15" alt="Valid HTML5" /></a>
+			<!-- w3css is broken yet<a href="//jigsaw.w3.org/css-validator/check/referer?profile=css3" title="Valid CSS" target="_blank">
+				<img class="w3-bar-item" src="images/button-css.png" width="80" height="15" alt="Valid CSS" />
+			</a>-->
+			</div>
+		</div>
+		<!-- End Bottom -->
+
+		<script>
+			var csvFile = document.getElementById("csv-file");
+
+			var data = [["Musterschüler Franz", "2AHET", "RE", "Musterlehrer Sepp", "mlf"]];
+
+			var options = {
+				data: data,
+				showColHeaders: false,
+				showRowHeaders: false,
+				allowInsertCols:false,
+				allowDeleteCols: false,
+				colWidth:150
+				};
+
+			var grid = new DataGridXL("grid", options );
+
+			csvFile.onchange = function(e){
+				var file = e.target.files[0];
+
+					Papa.parse(file, {
+						header: false,
+						dynamicTyping: true,
+						complete: function(results) {
+
+						  // overwrite grid with new data
+							options.data =  results.data;
+						  grid = new DataGridXL("grid", options);
+
+						}
+					});
+
+			}
+
+			document.getElementById("button-save").onclick = function(){
+				document.getElementById("iddata").value=JSON.stringify(grid.getData());
+			}
+
+			function w3_help_open() {
+			document.getElementById("idHelp").style.display = "block";
+			}
+
+			function w3_help_close() {
+				document.getElementById("idHelp").style.display = "none";
+			}
+		</script>
+	</body>
+</html>
+
